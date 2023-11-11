@@ -20,7 +20,6 @@ goalkeeping_stats_url = (
     "https://fbref.com/en/comps/9/2007-2008/keepers/2007-2008-Premier-League-Stats"
 )
 driver = webdriver.Chrome()
-"""
 # 골키퍼 스텟 가져오기
 driver.implicitly_wait(10)
 driver.get(goalkeeping_stats_url)
@@ -141,7 +140,7 @@ with open(
 ) as output_file:
     json.dump(standard_stat, output_file, ensure_ascii=False)
     print(f"데이터가 파일에 저장되었습니다.")
-"""
+
 # shooting 스텟 가져오기
 driver.implicitly_wait(10)
 driver.get(shooting_stats_url)

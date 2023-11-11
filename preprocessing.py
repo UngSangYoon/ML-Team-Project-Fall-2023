@@ -1,14 +1,8 @@
 # pip install unidecode
-from unidecode import unidecode
-import requests
-from bs4 import BeautifulSoup
 import pandas as pd
 import os
 import csv
 import json
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
 
 output_folder = "output"
 if not os.path.exists(output_folder):
@@ -20,12 +14,13 @@ f = open("matches.csv", "r")
 reader = csv.reader(f)
 data = list(reader)
 
+
 # json 파일 list로 불러오기
-with open("07_08_GK.json", "r") as f:
+with open("output/07_08_GK.json", "r") as f:
     gks = json.load(f)
-with open("07_08_standard_stat.json", "r") as f:
+with open("output/07_08_standard_stat.json", "r") as f:
     standard_stat = json.load(f)
-with open("07_08_shooting_stat.json", "r") as f:
+with open("output/07_08_shooting_stat.json", "r") as f:
     shooting_stat = json.load(f)
 
 data_of_a_season = {"home team": [], "away team": []}
@@ -55,15 +50,17 @@ for match in range(1903, 2283):
         else:
             team = data[match][1]
         index = find_index(gks, team, name)
+        if index == None:
+            break
         position = "GK"
-        age = gks[index][3]
-        appearance = gks[index][4]
-        save = gks[index][5]
-        ga = gks[index][6]
-        wins = gks[index][7]
-        draws = gks[index][8]
-        loses = gks[index][9]
-        cs = gks[index][10]
+        age = gks[index][2]
+        appearance = gks[index][3]
+        save = gks[index][4]
+        ga = gks[index][5]
+        wins = gks[index][6]
+        draws = gks[index][7]
+        loses = gks[index][8]
+        cs = gks[index][9]
         gk_stats = [
             position,
             age,
@@ -75,9 +72,9 @@ for match in range(1903, 2283):
             cs,
         ]
         if gk == 5:
-            home_team_stats.append(stats)
+            home_team_stats.append(gk_stats)
         else:
-            away_team_stats.append(stats)
+            away_team_stats.append(gk_stats)
 
     for player in range(7, 27):
         name = data[match][player]
@@ -86,6 +83,8 @@ for match in range(1903, 2283):
         else:
             team = data[match][1]
         index = find_index(standard_stat, team, name)
+        if index == None:
+            break
         # stadard stat 가져오기
         position = standard_stat[index][2]
         age = standard_stat[index][3]
@@ -95,6 +94,8 @@ for match in range(1903, 2283):
         pk_made = standard_stat[index][7]
         # shooting stat 가져오기
         index = find_index(shooting_stat, team, name)
+        if index == None:
+            break
         sot = shooting_stat[index][2]
         goal_per_sot = shooting_stat[index][3]
 

@@ -168,6 +168,7 @@ while True:
     except NoSuchElementException:
         break
     shooting_stat.append((team, unidecode(name), float(sot), float(goal_per_sot)))
+    num += 1
 
 with open(
     os.path.join(output_folder, "07_08_shooting_stat.json"), "w", encoding="utf-8"

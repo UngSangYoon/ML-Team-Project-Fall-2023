@@ -37,12 +37,13 @@ def find_index(list, team, name):
 
 # csv 파일에서 match data 읽어오기
 for match in range(1903, 2283):
-    if len(home_team_stats) == 11:
-        data_of_a_season["home team"].append(home_team_stats)
-        home_team_stats.clear()
-    if len(away_team_stats) == 11:
-        data_of_a_season["away team"].append(away_team_stats)
-        away_team_stats.clear()
+    if len(home_team_stats) == 11 and len(away_team_stats) == 11:
+        globals()[f"home_team_stats_{match}"] = home_team_stats
+        globals()[f"away_team_stats_{match}"] = away_team_stats
+        data_of_a_season["home team"].append(globals()[f"home_team_stats_{match}"])
+        data_of_a_season["away team"].append(globals()[f"away_team_stats_{match}"])
+    away_team_stats = []
+    home_team_stats = []
     for gk in range(5, 7):
         name = data[match][gk]
         if gk == 5:
@@ -119,3 +120,5 @@ with open(
 ) as output_file:
     json.dump(data_of_a_season, output_file, ensure_ascii=False)
     print(f"데이터가 파일에 저장되었습니다.")
+print(len(data_of_a_season["home team"]))
+print(len(data_of_a_season["away team"]))

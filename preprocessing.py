@@ -43,6 +43,23 @@ def find_index(list, team, name):
             if list[index][0] == team:
                 return index
 
+    # 일치하는 이름 없는 경우 andrew, matthew 검사
+    for index in range(len(list)):
+        if list[index][1].lower().replace(" ", "").replace(
+            "-", ""
+        ) == name.lower().replace(" ", "").replace("-", "").replace(
+            "andrew", "andy"
+        ).replace(
+            "matthew", "matt"
+        ):
+            can_index.append(index)
+    if len(can_index) == 1:
+        return can_index[0]
+    else:
+        for index in can_index:
+            if list[index][0] == team:
+                return index
+
 
 # csv 파일에서 match data 읽어오기
 # 02-03 : 1,381

@@ -11,9 +11,9 @@ class ANN:
         self.epoch = epoch
         self.learning_rate = learning_rate
         self.params = {}
-        self.params["W1"] = xaiver_init(input_size, hidden_size)
+        self.params["W1"] = xavier_init(input_size, hidden_size)
         self.params["b1"] = np.zeros(hidden_size)
-        self.params["W2"] = xaiver_init(hidden_size, output_size)
+        self.params["W2"] = xavier_init(hidden_size, output_size)
         self.params["b2"] = np.zeros(output_size)
 
         # Build layers

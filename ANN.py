@@ -8,27 +8,17 @@ class ANN:
         # 가중치 초기화
         self.learning_rate = learning_rate
         params = {}
-        params["W1"] = he_init(input_size, hidden_size*4)
-        params["b1"] = np.zeros(hidden_size*4)
-        params["W2"] = he_init(hidden_size*4, hidden_size)
-        params["b2"] = np.zeros(hidden_size)
-        params["W3"] = he_init(hidden_size, hidden_size//2)
-        params["b3"] = np.zeros(hidden_size//2)
-        params["W4"] = he_init(hidden_size//2, output_size)
-        params["b4"] = np.zeros(output_size)
+        params["W1"] = he_init(input_size, hidden_size//2)
+        params["b1"] = np.zeros(hidden_size//2)
+        params["W2"] = he_init(hidden_size//2, output_size)
+        params["b2"] = np.zeros(output_size)
 
         # Build layers
         self.layers = [
             Affine(params["W1"], params["b1"]),
-            BatchNorm(),
             ReLU(),
+            BatchNorm(),
             Affine(params["W2"], params["b2"]),
-            BatchNorm(),
-            ReLU(),
-            Affine(params["W3"], params["b3"]),
-            BatchNorm(),
-            ReLU(),
-            Affine(params["W4"], params["b4"]),
         ]
 
         self.last_layer = MSELoss()
@@ -98,7 +88,8 @@ class ANN:
         return acc, win_acc
 
 def load_datasets():
-    seasons = ['03_04', '04_05', '05_06', '06_07', '07_08']
+    seasons = ['03_04', '04_05', '05_06', '06_07', '07_08', '08_09', '09_10', '10_11', '11_12', '12_13', '13_14', '14_15', '15_16', '16_17', '17_18',
+               '18_19', '19_20', '20_21', '21_22']
     stats = []
     scores = []
     for season in seasons:
@@ -121,7 +112,7 @@ scores = normalize_scores(scores) # normalize scores to 0 ~ 1, where 0 means 0 a
 (train_stats, train_scores), (test_stats, test_scores), (eval_stats, eval_scores) = train_test_eval_split(stats, scores, test_ratio=0.1, eval_ratio=0.1)
 
 ann = ANN(input_size=156, hidden_size=156, output_size=2, learning_rate=0.001)
-ann.learn(train_stats, train_scores, eval_stats, eval_scores, iters_num=10000, batch_size=100, loss_interval=100)
+ann.learn(train_stats, train_scores, eval_stats, eval_scores, iters_num=10000, batch_size=1000, loss_interval=100)
 ann.predict(test_stats)[:10]
 np.around(test_scores[:10]*4)
 acc, acc_win = ann.accuracy(test_stats, test_scores)

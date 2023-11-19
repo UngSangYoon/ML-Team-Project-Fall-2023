@@ -36,9 +36,9 @@ def xavier_init(n_in, n_out):
 def he_init(n_in, n_out):
     return np.random.randn(n_in, n_out) * np.sqrt(2 / n_in)
 
-def train_test_eval_split(input_data, target_data, test_ratio, eval_ratio, seed):
+def train_test_eval_split(input_data, target_data, test_ratio, eval_ratio):
     data_size = input_data.shape[0]
-    shuffle_mask = np.random.choice(data_size, data_size, replace=False, seed=seed)
+    shuffle_mask = np.random.choice(data_size, data_size, replace=False)
     input_data = input_data[shuffle_mask]
     target_data = target_data[shuffle_mask]
     test_size = int(data_size * test_ratio)

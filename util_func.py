@@ -18,7 +18,7 @@ def cross_entropy_error(y, t):
         y = y.reshape(1, y.size)
              
     batch_size = y.shape[0]
-    return -np.sum(np.log(y[np.arange(batch_size), t] + delta)) / batch_size
+    return -np.sum(t * np.log(y + delta)) / batch_size
 
 # random initialization
 def random_init(n_in, n_out):

@@ -31,3 +31,10 @@ def normalize_stats(stats):
             continue
         stats[:, i] = (stats[:, i] - min_vals[i]) / (max_vals[i] - min_vals[i])
     return stats, min_vals, max_vals
+
+def normalize_scores(scores):
+    scores = scores.astype(float)
+    for score in scores:
+        score[0] = score[0] / 4
+        score[1] = score[1] / 4
+    return scores

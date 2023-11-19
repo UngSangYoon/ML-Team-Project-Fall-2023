@@ -7,32 +7,14 @@ x=[]
 y=[]
 x_test=[]
 y_test=[]
-with open('dataset/03_04.json') as file:
-    stat = json.load(file)
-with open('dataset/03_04_score.json') as file:
-    score = json.load(file)
-x.extend(stat)
-y.extend(score)
+for i in range(17):
+    with open(f'dataset/{i+3:02d}_{i+4:02d}.json') as file:
+        stat = json.load(file)
+    with open(f'dataset/{i+3:02d}_{i+4:02d}_score.json') as file:
+        score = json.load(file)
+    x.extend(stat)
+    y.extend(score)
 
-with open('dataset/04_05.json') as file:
-    stat = json.load(file)
-with open('dataset/04_05_score.json') as file:
-    score = json.load(file)
-x.extend(stat)
-y.extend(score)
-
-with open('dataset/05_06.json') as file:
-    stat = json.load(file)
-with open('dataset/05_06_score.json') as file:
-    score = json.load(file)
-x.extend(stat)
-y.extend(score)
-with open('dataset/06_07.json') as file:
-    stat = json.load(file)
-with open('dataset/06_07_score.json') as file:
-    score = json.load(file)
-x.extend(stat)
-y.extend(score)
 
 x_train = x
 x_train = np.array(x_train)
@@ -41,9 +23,9 @@ y_train = [(int(pair[0]),int(pair[1])) for pair in y_train]
 y_train = [list(pair) for pair in y_train]
 y_train = score_to_target(y_train)
 #X_TEST/Y_TEST
-with open('dataset/07_08.json') as file:
+with open('dataset/21_22.json') as file:
     stat = json.load(file)
-with open('dataset/07_08_score.json') as file:
+with open('dataset/21_22_score.json') as file:
     score = json.load(file)
 x_test.extend(stat)
 y_test.extend(score)
@@ -100,7 +82,7 @@ class LogisticRegression:
 
 # 학습
 log = LogisticRegression(x_train, y_train, x_test, y_test)
-bias, costs = log.learn(0.0000001, 1000)
+bias, costs = log.learn(0.00000005, 500)
 pre_cnt = 0
 pre_wr =0
 for i in range(0, 376):

@@ -1,6 +1,7 @@
 import json
 from util_func import *
 from layers_nn import *
+from embed_and_norm import *
 
 class ANN:
     def __init__(self, input_size, hidden_size, output_size, learning_rate):
@@ -60,29 +61,6 @@ class ANN:
         output = self.forward(input)
         return np.argmax(output, axis=1)
 
-# convert scores to one-hot targets
-def score_to_target(scores):
-    target = []
-    for score in scores:
-        if score[0] > 9:
-            score[0] = 9
-        if score[1] > 10:
-            score[1] = 9
-        target.append(int(score[0]*10 + score[1])) # e.g., 24 means score 2:4
-    target = np.array(target)
-    target = np.eye(100)[target]
-    return target
-
-# convert one-hot targets to scores
-def target_to_score(targets):
-    targets = np.argmax(targets, axis=1)
-    scores = []
-    for target in targets:
-        score = [target // 10, target % 10]
-        scores.append(score)
-    scores = np.array(scores)
-    return scores
-    
 with open('dataset/07_08_score.json', 'r') as f:
     scores = json.load(f)
 with open('dataset/07_08.json', 'r') as f:
@@ -90,5 +68,7 @@ with open('dataset/07_08.json', 'r') as f:
 scores = np.array(scores)
 stats = np.array(stats)
 
-ann = ANN(input_size=156, hidden_size=156, output_size=100, learning_rate=0.001)
-ann.learn(stats, score_to_target(scores), iters_num=1000, batch_size=10)
+stats, min_vals, max_vals = normalize_stats(stats)
+
+ann = ANN(input_size=156, hidden_size=156, output_size=100, learning_rate=0.0001)
+ann.learn(stats, score_to_target(scores), iters_num=10000, batch_size=100)

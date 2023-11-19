@@ -59,16 +59,26 @@ class ANN:
 
     def predict(self, input):
         output = self.forward(input)
-        return np.argmax(output, axis=1)
+        return target_to_score(output)
 
-with open('dataset/07_08_score.json', 'r') as f:
-    scores = json.load(f)
-with open('dataset/07_08.json', 'r') as f:
-    stats = json.load(f)
-scores = np.array(scores)
-stats = np.array(stats)
+def load_datasets():
+    seasons = ['03_04', '04_05', '05_06', '06_07', '07_08']
+    stats = []
+    scores = []
+    for season in seasons:
+        with open(f'dataset/{season}.json', 'r') as f:
+            stats_loaded = json.load(f)
+        with open(f'dataset/{season}_score.json', 'r') as f:
+            scores_loaded = json.load(f)
+        stats.extend(stats_loaded)
+        scores.extend(scores_loaded)
+    scores = np.array(scores, int)
+    stats = np.array(stats)
+    return stats, scores
+
+stats, scores = load_datasets()
 
 stats, min_vals, max_vals = normalize_stats(stats)
 
-ann = ANN(input_size=156, hidden_size=156, output_size=100, learning_rate=0.0001)
-ann.learn(stats, score_to_target(scores), iters_num=10000, batch_size=100)
+ann = ANN(input_size=156, hidden_size=156, output_size=25, learning_rate=0.0001)
+ann.learn(stats, score_to_target(scores), iters_num=5000, batch_size=1000)

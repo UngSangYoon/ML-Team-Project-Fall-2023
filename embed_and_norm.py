@@ -4,13 +4,13 @@ import numpy as np
 def score_to_target(scores):
     target = []
     for score in scores:
-        if score[0] > 9:
-            score[0] = 9
-        if score[1] > 9:
-            score[1] = 9
-        target.append(int(score[0]*10 + score[1])) # e.g., 24 means score 2:4
+        if score[0] > 4:
+            score[0] = 4
+        if score[1] > 4:
+            score[1] = 4
+        target.append(int(score[0]*5 + score[1])) # e.g., 2*5 + 4 = 14 means score 2:4
     target = np.array(target)
-    target = np.eye(100)[target]
+    target = np.eye(5*5)[target]
     return target
 
 # convert one-hot targets to scores
@@ -18,7 +18,7 @@ def target_to_score(targets):
     targets = np.argmax(targets, axis=1)
     scores = []
     for target in targets:
-        score = [target // 10, target % 10]
+        score = [target // 5, target % 5]
         scores.append(score)
     scores = np.array(scores)
     return scores

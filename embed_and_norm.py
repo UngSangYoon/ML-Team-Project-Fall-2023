@@ -6,7 +6,7 @@ def score_to_target(scores):
     for score in scores:
         if score[0] > 9:
             score[0] = 9
-        if score[1] > 10:
+        if score[1] > 9:
             score[1] = 9
         target.append(int(score[0]*10 + score[1])) # e.g., 24 means score 2:4
     target = np.array(target)

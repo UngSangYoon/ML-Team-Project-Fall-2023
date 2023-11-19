@@ -103,3 +103,56 @@ class SoftmaxWithLoss:
         batch_size = self.t.shape[0]
         dx = (self.y - self.t) / batch_size
         return dx
+
+# Mean Squared Error Loss for batched input
+class MSELoss:
+    def __init__(self):
+        self.loss = None
+        self.y = None
+        self.t = None
+    
+    def forward(self, x, t):
+        self.t = t
+        self.y = x
+        self.loss = mean_squared_error(self.y, self.t)
+        return self.loss
+    
+    def backward(self, dout=1):
+        batch_size = self.t.shape[0]
+        dx = (self.y - self.t) / batch_size
+        return dx
+
+# batch normalization
+class BatchNorm:
+    def __init__(self):
+        self.gamma = 1.0
+        self.beta = 0.0
+        self.x = None
+        self.dgamma = None
+        self.dbeta = None
+        self.dx = None
+        self.mu = None
+        self.var = None
+        self.x_hat = None
+        self.batch_size = None
+        self.epsilon = 1e-7
+    
+    def forward(self, x):
+        self.x = x
+        self.batch_size = self.x.shape[0]
+        self.mu = np.mean(self.x, axis=0)
+        self.var = np.var(self.x, axis=0)
+        self.x_hat = (self.x - self.mu) / np.sqrt(self.var + self.epsilon)
+        out = self.gamma * self.x_hat + self.beta
+        return out
+    
+    def backward(self, dout):
+        self.dgamma = np.sum(dout * self.x_hat, axis=0)
+        self.dbeta = np.sum(dout, axis=0)
+        dx_hat = dout * self.gamma
+        x_mu = self.x - self.mu
+        var_eps = self.var + self.epsilon
+        dvar = np.sum(dx_hat * x_mu * (-0.5) * (var_eps ** (-1.5)), axis=0)
+        dmu = np.sum(dx_hat * (-1) / np.sqrt(var_eps), axis=0) - dvar * np.mean(2 * x_mu, axis=0)
+        self.dx = (dx_hat / np.sqrt(var_eps)) + (dvar * 2 * x_mu / self.batch_size) + (dmu / self.batch_size)
+        return self.dx

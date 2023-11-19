@@ -20,10 +20,13 @@ class ANN:
         # Build layers
         self.layers = [
             Affine(params["W1"], params["b1"]),
+            BatchNorm(),
             ReLU(),
             Affine(params["W2"], params["b2"]),
+            BatchNorm(),
             ReLU(),
             Affine(params["W3"], params["b3"]),
+            BatchNorm(),
             ReLU(),
             Affine(params["W4"], params["b4"]),
         ]
@@ -117,7 +120,7 @@ scores = normalize_scores(scores) # normalize scores to 0 ~ 1, where 0 means 0 a
 # split datasets
 (train_stats, train_scores), (test_stats, test_scores), (eval_stats, eval_scores) = train_test_eval_split(stats, scores, test_ratio=0.1, eval_ratio=0.1)
 
-ann = ANN(input_size=156, hidden_size=156, output_size=2, learning_rate=0.0001)
+ann = ANN(input_size=156, hidden_size=156, output_size=2, learning_rate=0.001)
 ann.learn(train_stats, train_scores, eval_stats, eval_scores, iters_num=10000, batch_size=100, loss_interval=100)
 ann.predict(test_stats)[:10]
 np.around(test_scores[:10]*4)

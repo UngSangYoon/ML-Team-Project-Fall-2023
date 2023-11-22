@@ -3,33 +3,38 @@ import pandas as pd
 import json
 from sklearn.model_selection import train_test_split
 from embed_and_norm import *
-x=[]
-y=[]
+#배열 미리 선언
 x_test=[]
 y_test=[]
+x_train=[]
+y_train=[]
+#Train용 배열 입력
 for i in range(17):
     with open(f'dataset/{i+3:02d}_{i+4:02d}.json') as file:
         stat = json.load(file)
     with open(f'dataset/{i+3:02d}_{i+4:02d}_score.json') as file:
         score = json.load(file)
-    x.extend(stat)
-    y.extend(score)
-
-
-x_train = x
+    x_train.extend(stat)
+    y_train.extend(score)
+#실제 사용하는 형태로 변환
+#x_train: [inputdata] 형태의 List를 [inputdata][stat]형태의 numpy array로 변환
 x_train = np.array(x_train)
-y_train = y
+#y_train에서 일부 tuple형태가 있어서 모두 list형태로 변환
 y_train = [(int(pair[0]),int(pair[1])) for pair in y_train]
 y_train = [list(pair) for pair in y_train]
+#y_train: one_hot_vector 형태로 변환
 y_train = score_to_target(y_train)
-#X_TEST/Y_TEST
+
+#Test용 배열 입력
 with open('dataset/21_22.json') as file:
     stat = json.load(file)
 with open('dataset/21_22_score.json') as file:
     score = json.load(file)
 x_test.extend(stat)
 y_test.extend(score)
+#결과 검증시에는 one_hot_vector 형태 사용하지 않아서 y_test 별도로 복사
 y_copy = y_test
+#실제 사용 형태로 변환
 x_test = np.array(x_test)
 y_test = score_to_target(y_test)
 
@@ -82,7 +87,7 @@ class LogisticRegression:
 
 # 학습
 log = LogisticRegression(x_train, y_train, x_test, y_test)
-bias, costs = log.learn(0.00000005, 500)
+bias, costs = log.learn(0.000005, 200)
 pre_cnt = 0
 pre_wr =0
 for i in range(0, 376):

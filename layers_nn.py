@@ -76,6 +76,13 @@ class Affine:
         self.dW = None
         self.db = None
 
+        self.dW_m = np.zeros_like(W)
+        self.db_m = np.zeros_like(b)
+        self.dW_v = np.zeros_like(W)
+        self.db_v = np.zeros_like(b)
+
+        self.t = 0
+
     def forward(self, x):
         self.x = x
         out = np.dot(x, self.W) + self.b
@@ -124,9 +131,9 @@ class MSELoss:
 
 # batch normalization
 class BatchNorm:
-    def __init__(self):
-        self.gamma = 1.0
-        self.beta = 0.0
+    def __init__(self, dims):
+        self.gamma = np.ones((1, dims), dtype=np.float32)
+        self.beta = np.zeros((1, dims), dtype=np.float32)
         self.x = None
         self.dgamma = None
         self.dbeta = None
@@ -136,23 +143,45 @@ class BatchNorm:
         self.x_hat = None
         self.batch_size = None
         self.epsilon = 1e-7
+
+        self.dgamma_m = np.zeros_like(self.gamma)
+        self.dbeta_m = np.zeros_like(self.beta)
+        self.dgamma_v = np.zeros_like(self.gamma)
+        self.dbeta_v = np.zeros_like(self.beta)
+
+        self.t = 0
     
     def forward(self, x):
         self.x = x
         self.batch_size = self.x.shape[0]
-        self.mu = np.mean(self.x, axis=0)
-        self.var = np.var(self.x, axis=0)
+        self.mu = np.mean(self.x, axis=0, keepdims=True)
+        self.var = np.var(self.x, axis=0, keepdims=True)
         self.x_hat = (self.x - self.mu) / np.sqrt(self.var + self.epsilon)
         out = self.gamma * self.x_hat + self.beta
         return out
     
     def backward(self, dout):
-        self.dgamma = np.sum(dout * self.x_hat, axis=0)
-        self.dbeta = np.sum(dout, axis=0)
+        self.dgamma = np.sum(dout * self.x_hat, axis=0, keepdims=True)
+        self.dbeta = np.sum(dout, axis=0, keepdims=True)
         dx_hat = dout * self.gamma
         x_mu = self.x - self.mu
         var_eps = self.var + self.epsilon
-        dvar = np.sum(dx_hat * x_mu * (-0.5) * (var_eps ** (-1.5)), axis=0)
-        dmu = np.sum(dx_hat * (-1) / np.sqrt(var_eps), axis=0) - dvar * np.mean(2 * x_mu, axis=0)
+        dvar = np.sum(dx_hat * x_mu * (-0.5) * (var_eps ** (-1.5)), axis=0, keepdims=True)
+        dmu = np.sum(dx_hat * (-1) / np.sqrt(var_eps), axis=0, keepdims=True) - dvar * np.mean(2 * x_mu, axis=0, keepdims=True)
         self.dx = (dx_hat / np.sqrt(var_eps)) + (dvar * 2 * x_mu / self.batch_size) + (dmu / self.batch_size)
         return self.dx
+    
+class Dropout():
+    def __init__(self, ratio=0.1):
+        self.ratio = ratio
+        self.mask = None
+    
+    def forward(self, x, train=True):
+        if train:
+            self.mask = np.random.binomial(1, 1 - self.ratio, size=x.shape)
+            return x * self.mask
+        else:
+            return x * (1 - self.ratio)
+    
+    def backward(self, dout):
+        return dout * self.mask

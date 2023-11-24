@@ -1,48 +1,44 @@
 import numpy as np
 import json
 from embed_and_norm import *
+from util_func import *
+from matplotlib import pyplot as plt
+def load_datasets():
+    seasons = ['03_04', '04_05', '05_06', '06_07', '07_08', '08_09', '09_10', '10_11', '11_12', '12_13', '13_14', '14_15', '15_16', '16_17', '17_18',
+               '18_19', '19_20', '20_21', '21_22']
+    new_seasons = ['17_18', '18_19', '19_20', '20_21', '21_22']
+    stats = []
+    scores = []
+    for season in new_seasons:
+        with open(f'new_dataset_add_team_stat/{season}.json', 'r') as f:
+            stats_loaded = json.load(f)
+        with open(f'new_dataset_add_team_stat/{season}_score.json', 'r') as f:
+            scores_loaded = json.load(f)
+        stats.extend(stats_loaded)
+        scores.extend(scores_loaded)
+    scores = np.array(scores, int)
+    stats = np.array(stats)
+    return stats, scores
 
-#배열 미리 선언
-x_test=[]
-y_test=[]
-x_train=[]
-y_train=[]
-#Train용 배열 입력
-for i in range(17):
-    with open(f'dataset/{i+3:02d}_{i+4:02d}.json') as file:
-        stat = json.load(file)
-    with open(f'dataset/{i+3:02d}_{i+4:02d}_score.json') as file:
-        score = json.load(file)
-    x_train.extend(stat)
-    y_train.extend(score)
-#실제 사용하는 형태로 변환
-#x_train: [inputdata] 형태의 List를 [inputdata][stat]형태의 numpy array로 변환
-x_train = np.array(x_train)
-#y_train에서 일부 tuple형태가 있어서 모두 list형태로 변환
-y_train = [(int(pair[0]),int(pair[1])) for pair in y_train]
-y_train = [list(pair) for pair in y_train]
-#y_train: one_hot_vector 형태로 변환
+stats, scores = load_datasets()
+
+stats, min_vals, max_vals = normalize_stats(stats)
+scores = normalize_scores(scores) # normalize scores to 0 ~ 1, where 0 means 0 and 1 means 4
+
+# split datasets
+(x_train, y_train), (x_test, y_test), (x_eval, y_eval) = train_test_eval_split(stats, scores, test_ratio=0.1, eval_ratio=0.1)
 y_train = score_to_target(y_train)
-
-#Test용 배열 입력
-with open('dataset/21_22.json') as file:
-    stat = json.load(file)
-with open('dataset/21_22_score.json') as file:
-    score = json.load(file)
-x_test.extend(stat)
-y_test.extend(score)
-#결과 검증시에는 one_hot_vector 형태 사용하지 않아서 y_test 별도로 복사
 y_copy = y_test
-#실제 사용 형태로 변환
-x_test = np.array(x_test)
 y_test = score_to_target(y_test)
-
+y_eval = score_to_target(y_eval)
 class LogisticRegression:
-    def __init__(self, x_train, y_train, x_test, y_test):
+    def __init__(self, x_train, y_train, x_test, y_test, x_eval, y_eval):
         self._x_train = x_train
         self._y_train = y_train
         self._x_test = x_test
         self._y_test = y_test
+        self._x_eval = x_eval
+        self._y_eval = y_eval
         size_x = self._x_train.shape
         size_x = int(size_x[1])
         size_y = self._y_train.shape
@@ -62,10 +58,10 @@ class LogisticRegression:
 
     def learn(self, lr, epoch):
         costs = []
+        eval_costs=[]
         size = self._x_train.shape[0]
         jlen = self._y_train.shape[1]
         for i in range(epoch):
-            # 10개의 숫자별로 계산
             for j in range(jlen):
                 dt = (self.sigmoid(self._x_train, self.bias[:, j]) - self._y_train[:, j]).reshape(size,
                                                                                                   1) * self._x_train
@@ -73,9 +69,11 @@ class LogisticRegression:
                 self.bias[:, j] = self.bias[:, j] - lr * np.sum(dt, axis=0)
 
             cost = self.cost(self._x_train, self._y_train, self.bias)
+            eval_cost = self.cost(self._x_eval,self._y_eval,self.bias)
             print(i, 'epoch, cost: ', cost)
             costs.append(cost)
-        return self.bias, costs
+            eval_costs.append(eval_cost)
+        return self.bias, costs,eval_costs
 
     def predict(self, x, bias):
         size = self.bias.shape
@@ -85,16 +83,16 @@ class LogisticRegression:
 
 
 # 학습
-log = LogisticRegression(x_train, y_train, x_test, y_test)
-bias, costs = log.learn(0.000005, 200)
+log = LogisticRegression(x_train, y_train, x_test, y_test,x_eval,y_eval)
+bias, costs,eval_costs = log.learn(0.000001, 200)
 pre_cnt = 0
 pre_wr =0
-for i in range(0, 376):
+for i in range (len(x_test)):
     prediction = log.predict(x_test[i], bias)
     s1 = int(prediction/4)
     s2 = prediction%4
-    reals1 = y_copy[i][0]
-    reals2 = y_copy[i][1]
+    reals1 = y_copy[i][0]*4
+    reals2 = y_copy[i][1]*4
     if s1>s2 and reals1>reals2:
         pre_wr +=1
     elif s1==s2 and reals1==reals2:
@@ -104,5 +102,8 @@ for i in range(0, 376):
     print(i, ' predict: [',s1,' : ',s2,']', ' real: [',reals1,':',reals2,']')
     if s1 == reals1 and s2 == reals2:
         pre_cnt+=1
-print("accuracy = ",pre_cnt/376)
-print("winrate accuracy = ",pre_wr/376)
+print("accuracy = ",pre_cnt/i)
+print("winrate accuracy = ",pre_wr/i)
+plt.plot(costs,label='loss')
+plt.plot(eval_costs,label='eval loss')
+plt.show()

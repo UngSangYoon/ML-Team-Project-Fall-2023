@@ -84,7 +84,7 @@ class LogisticRegression:
 
 # 학습
 log = LogisticRegression(x_train, y_train, x_test, y_test,x_eval,y_eval)
-bias, costs,eval_costs = log.learn(0.000001, 200)
+bias, costs,eval_costs = log.learn(0.000002, 200)
 pre_cnt = 0
 pre_wr =0
 for i in range (len(x_test)):
@@ -105,5 +105,8 @@ for i in range (len(x_test)):
 print("accuracy = ",pre_cnt/i)
 print("winrate accuracy = ",pre_wr/i)
 plt.plot(costs,label='loss')
+plt.savefig("Logistic_costs.png")
+plt.cla()
 plt.plot(eval_costs,label='eval loss')
+plt.savefig("Logistic_evalloss.png")
 plt.show()

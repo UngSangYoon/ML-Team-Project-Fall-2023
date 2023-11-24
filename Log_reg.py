@@ -56,15 +56,18 @@ class LogisticRegression:
         costs = y * np.log(h + delta) + (1 - y) * np.log(1 - h + delta)
         return (-1 / size) * (np.sum(costs, axis=0))
 
-    def learn(self, lr, epoch):
+    def learn(self, lr, epoch,batch_size):
         costs = []
         eval_costs=[]
         size = self._x_train.shape[0]
         jlen = self._y_train.shape[1]
         for i in range(epoch):
+            batch_mask = np.random.choice(size, batch_size)
+            x_batch = self._x_train[batch_mask]
+            y_batch = self._y_train[batch_mask]
             for j in range(jlen):
-                dt = (self.sigmoid(self._x_train, self.bias[:, j]) - self._y_train[:, j]).reshape(size,
-                                                                                                  1) * self._x_train
+                dt = (self.sigmoid(x_batch, self.bias[:, j]) - y_batch[:, j]).reshape(batch_size,
+                                                                                                  1) * x_batch
                 # 그래디언트 백터 계산
                 self.bias[:, j] = self.bias[:, j] - lr * np.sum(dt, axis=0)
 
@@ -84,7 +87,7 @@ class LogisticRegression:
 
 # 학습
 log = LogisticRegression(x_train, y_train, x_test, y_test,x_eval,y_eval)
-bias, costs,eval_costs = log.learn(0.000002, 200)
+bias, costs,eval_costs = log.learn(0.000002, 200,200)
 pre_cnt = 0
 pre_wr =0
 for i in range (len(x_test)):

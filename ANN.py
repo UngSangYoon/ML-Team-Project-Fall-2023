@@ -167,8 +167,8 @@ scores = normalize_scores(scores) # normalize scores to 0 ~ 1, where 0 means 0 a
 # split datasets
 (train_stats, train_scores), (test_stats, test_scores), (eval_stats, eval_scores) = train_test_eval_split(stats, scores, test_ratio=0.1, eval_ratio=0.1)
 
-ann = ANN(input_size=316, hidden_size=316, output_size=2, learning_rate=0.002, is_DNN_with_ADAM=True) # DNN with ADAM
-# ann = ANN(input_size=316, hidden_size=316, output_size=2, learning_rate=0.002, is_DNN_with_ADAM=False) # shallow NN with SGD
+ann = ANN(input_size=306, hidden_size=306, output_size=2, learning_rate=0.002, is_DNN_with_ADAM=True) # DNN with ADAM
+# ann = ANN(input_size=306, hidden_size=306, output_size=2, learning_rate=0.002, is_DNN_with_ADAM=False) # shallow NN with SGD
 
 ann.learn(train_stats, train_scores, eval_stats, eval_scores, iters_num=10000, batch_size=200, loss_interval=100, lr_decay=0.99995)
 print(ann.predict(test_stats)[:10])

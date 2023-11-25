@@ -26,7 +26,7 @@ def cross_entropy_error(y, t):
 
 # random initialization
 def random_init(n_in, n_out):
-    return np.random.randn(n_in, n_out) * 0.01
+    return np.random.randn(n_in, n_out)
 
 # Xavier initialization
 def xavier_init(n_in, n_out):

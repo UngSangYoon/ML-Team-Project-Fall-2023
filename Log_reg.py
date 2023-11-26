@@ -110,10 +110,12 @@ def run():
 
     print("accuracy = ",pre_cnt/i)
     print("winrate accuracy = ",pre_wr/i)
+    plt.title('loss')
     plt.plot(costs,label='loss')
     plt.savefig("Logistic_costs.png")
     plt.show()
     plt.cla()
+    plt.title('eval loss')
     plt.plot(eval_costs,label='eval loss')
     plt.savefig("Logistic_evalloss.png")
     plt.show()

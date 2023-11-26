@@ -21,17 +21,6 @@ def load_datasets():
     stats = np.array(stats)
     return stats, scores
 
-stats, scores = load_datasets()
-
-stats, min_vals, max_vals = normalize_stats(stats)
-scores = normalize_scores(scores) # normalize scores to 0 ~ 1, where 0 means 0 and 1 means 4
-
-# split datasets
-(x_train, y_train), (x_test, y_test), (x_eval, y_eval) = train_test_eval_split(stats, scores, test_ratio=0.1, eval_ratio=0.1)
-y_train = score_to_target(y_train)
-y_copy = y_test
-y_test = score_to_target(y_test)
-y_eval = score_to_target(y_eval)
 class LogisticRegression:
     def __init__(self, x_train, y_train, x_test, y_test, x_eval, y_eval):
         self._x_train = x_train
@@ -85,33 +74,46 @@ class LogisticRegression:
         prediction = self.sigmoid(x.reshape(1, size), weights)
         return np.argmax(prediction)
 
-# 학습
-log = LogisticRegression(x_train, y_train, x_test, y_test,x_eval,y_eval)
-weights, costs, eval_costs = log.learn(0.000001, 10000, 200)
-pre_cnt = 0
-pre_wr = 0
-for i in range (len(x_test)):
-    prediction = log.predict(x_test[i], weights)
-    s1 = int(prediction/5)
-    s2 = prediction%5
-    reals1 = y_copy[i][0]*4
-    reals2 = y_copy[i][1]*4
-    if s1>s2 and reals1>reals2:
-        pre_wr +=1
-    elif s1==s2 and reals1==reals2:
-        pre_wr +=1
-    elif s1<s2 and reals1<reals2:
-        pre_wr +=1
-    print(i, ' predict: [',s1,' : ',s2,']', ' real: [',reals1,':',reals2,']')
-    if s1 == reals1 and s2 == reals2:
-        pre_cnt+=1
+def run():
+    stats, scores = load_datasets()
 
-print("accuracy = ",pre_cnt/i)
-print("winrate accuracy = ",pre_wr/i)
-plt.plot(costs,label='loss')
-plt.savefig("Logistic_costs.png")
-plt.show()
-plt.cla()
-plt.plot(eval_costs,label='eval loss')
-plt.savefig("Logistic_evalloss.png")
-plt.show()
+    stats, min_vals, max_vals = normalize_stats(stats)
+    scores = normalize_scores(scores) # normalize scores to 0 ~ 1, where 0 means 0 and 1 means 4
+
+    # split datasets
+    (x_train, y_train), (x_test, y_test), (x_eval, y_eval) = train_test_eval_split(stats, scores, test_ratio=0.1, eval_ratio=0.1)
+    y_train = score_to_target(y_train)
+    y_copy = y_test
+    y_test = score_to_target(y_test)
+    y_eval = score_to_target(y_eval)
+
+    # 학습
+    log = LogisticRegression(x_train, y_train, x_test, y_test,x_eval,y_eval)
+    weights, costs, eval_costs = log.learn(0.00001, 10000, 200)
+    pre_cnt = 0
+    pre_wr = 0
+    for i in range (len(x_test)):
+        prediction = log.predict(x_test[i], weights)
+        s1 = int(prediction/5)
+        s2 = prediction%5
+        reals1 = y_copy[i][0]*4
+        reals2 = y_copy[i][1]*4
+        if s1>s2 and reals1>reals2:
+            pre_wr +=1
+        elif s1==s2 and reals1==reals2:
+            pre_wr +=1
+        elif s1<s2 and reals1<reals2:
+            pre_wr +=1
+        print(i, ' predict: [',s1,' : ',s2,']', ' real: [',reals1,':',reals2,']')
+        if s1 == reals1 and s2 == reals2:
+            pre_cnt+=1
+
+    print("accuracy = ",pre_cnt/i)
+    print("winrate accuracy = ",pre_wr/i)
+    plt.plot(costs,label='loss')
+    plt.savefig("Logistic_costs.png")
+    plt.show()
+    plt.cla()
+    plt.plot(eval_costs,label='eval loss')
+    plt.savefig("Logistic_evalloss.png")
+    plt.show()

@@ -159,25 +159,25 @@ def load_datasets():
     stats = np.array(stats)
     return stats, scores
 
-stats, scores = load_datasets()
+def run(input_size=306, hidden_size=306, output_size=2, learning_rate=0.002, is_DNN_with_ADAM=True):
+    stats, scores = load_datasets()
 
-stats, min_vals, max_vals = normalize_stats(stats)
-scores = normalize_scores(scores) # normalize scores to 0 ~ 1, where 0 means 0 and 1 means 4
+    stats, min_vals, max_vals = normalize_stats(stats)
+    scores = normalize_scores(scores) # normalize scores to 0 ~ 1, where 0 means 0 and 1 means 4
 
-# split datasets
-(train_stats, train_scores), (test_stats, test_scores), (eval_stats, eval_scores) = train_test_eval_split(stats, scores, test_ratio=0.1, eval_ratio=0.1)
+    # split datasets
+    (train_stats, train_scores), (test_stats, test_scores), (eval_stats, eval_scores) = train_test_eval_split(stats, scores, test_ratio=0.1, eval_ratio=0.1)
 
-ann = ANN(input_size=306, hidden_size=306, output_size=2, learning_rate=0.002, is_DNN_with_ADAM=True) # DNN with ADAM
-# ann = ANN(input_size=306, hidden_size=306, output_size=2, learning_rate=0.002, is_DNN_with_ADAM=False) # shallow NN with SGD
+    ann = ANN(input_size=input_size, hidden_size=hidden_size, output_size=output_size, learning_rate=learning_rate, is_DNN_with_ADAM=is_DNN_with_ADAM)
+    ann.learn(train_stats, train_scores, eval_stats, eval_scores, iters_num=10000, batch_size=200, loss_interval=100, lr_decay=0.99995)
 
-ann.learn(train_stats, train_scores, eval_stats, eval_scores, iters_num=10000, batch_size=200, loss_interval=100, lr_decay=0.99995)
-print(ann.predict(test_stats)[:10])
-print(np.around(test_scores[:10]*4))
-acc, acc_win = ann.accuracy(test_stats, test_scores)
-print(f"accuracy: {acc}, winning accuracy: {acc_win}")
+    print(ann.predict(test_stats)[:10])
+    print(np.around(test_scores[:10]*4))
+    acc, acc_win = ann.accuracy(test_stats, test_scores)
+    print(f"accuracy: {acc}, winning accuracy: {acc_win}")
 
-# show loss and eval loss
-plt.plot(ann.loss_list, label='loss')
-plt.plot(ann.eval_loss_list, label='eval loss')
-plt.legend()
-plt.show()
+    # show loss and eval loss
+    plt.plot(ann.loss_list, label='loss')
+    plt.plot(ann.eval_loss_list, label='eval loss')
+    plt.legend()
+    plt.show()

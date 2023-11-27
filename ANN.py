@@ -4,9 +4,11 @@ from layers_nn import *
 from embed_and_norm import *
 from matplotlib import pyplot as plt
 
-class ANN:
-    def __init__(self, input_size, hidden_size, output_size, learning_rate, is_DNN_with_ADAM):
 
+class ANN:
+    def __init__(
+        self, input_size, hidden_size, output_size, learning_rate, is_DNN_with_ADAM
+    ):
         # important! is_DNN_with_ADAM: True if DNN and ADAM, False if shallow and SGD
         self.is_DNN_with_ADAM = is_DNN_with_ADAM
 
@@ -21,7 +23,7 @@ class ANN:
         params["b3"] = np.zeros(output_size)
 
         if self.is_DNN_with_ADAM:
-        # Build layers
+            # Build layers
             self.layers = [
                 Affine(params["W1"], params["b1"]),
                 BatchNorm(hidden_size),
@@ -80,22 +82,40 @@ class ANN:
         for layer in self.layers:
             if isinstance(layer, Affine):
                 layer.t += 1
-                layer.dW_m, layer.dW_v, layer.dW = adam(layer.dW, layer.dW_m, layer.dW_v, layer.t)
-                layer.db_m, layer.db_v, layer.db = adam(layer.db, layer.db_m, layer.db_v, layer.t)
+                layer.dW_m, layer.dW_v, layer.dW = adam(
+                    layer.dW, layer.dW_m, layer.dW_v, layer.t
+                )
+                layer.db_m, layer.db_v, layer.db = adam(
+                    layer.db, layer.db_m, layer.db_v, layer.t
+                )
                 layer.W -= self.learning_rate * layer.dW
                 layer.b -= self.learning_rate * layer.db
             elif isinstance(layer, BatchNorm):
                 layer.t += 1
-                layer.dgamma_m, layer.dgamma_v, layer.dgamma = adam(layer.dgamma, layer.dgamma_m, layer.dgamma_v, layer.t)
-                layer.dbeta_m, layer.dbeta_v, layer.dbeta = adam(layer.dbeta, layer.dbeta_m, layer.dbeta_v, layer.t)
+                layer.dgamma_m, layer.dgamma_v, layer.dgamma = adam(
+                    layer.dgamma, layer.dgamma_m, layer.dgamma_v, layer.t
+                )
+                layer.dbeta_m, layer.dbeta_v, layer.dbeta = adam(
+                    layer.dbeta, layer.dbeta_m, layer.dbeta_v, layer.t
+                )
                 layer.gamma -= self.learning_rate * layer.dgamma
                 layer.beta -= self.learning_rate * layer.dbeta
         self.lr_decay(lr_decay)
-    
+
     def lr_decay(self, decay_rate):
         self.learning_rate *= decay_rate
-    
-    def learn(self, input, target, eval_input, eval_target, iters_num, batch_size, loss_interval, lr_decay):
+
+    def learn(
+        self,
+        input,
+        target,
+        eval_input,
+        eval_target,
+        iters_num,
+        batch_size,
+        loss_interval,
+        lr_decay,
+    ):
         data_size = input.shape[0]
         for i in range(iters_num):
             batch_mask = np.random.choice(data_size, batch_size)
@@ -111,16 +131,18 @@ class ANN:
                 eval_loss = self.loss(eval_input, eval_target)
                 self.loss_list.append(loss)
                 self.eval_loss_list.append(eval_loss)
-                print(f"iter {i}, loss: {loss}, eval loss: {eval_loss}, lr: {self.learning_rate}")
+                print(
+                    f"iter {i}, loss: {loss}, eval loss: {eval_loss}, lr: {self.learning_rate}"
+                )
 
     def predict(self, input):
         output = self.forward(input, train=False)
         output[output < 0] = 0
-        return np.around(output*4)
+        return np.around(output * 4)
 
     def accuracy(self, input, target):
         output = self.predict(input)
-        target = np.around(target*4)
+        target = np.around(target * 4)
 
         # accuracy
         correct = 0
@@ -142,16 +164,36 @@ class ANN:
 
         return acc, win_acc
 
+
 def load_datasets():
-    seasons = ['03_04', '04_05', '05_06', '06_07', '07_08', '08_09', '09_10', '10_11', '11_12', '12_13', '13_14', '14_15', '15_16', '16_17', '17_18',
-               '18_19', '19_20', '20_21', '21_22']
-    new_seasons = ['17_18', '18_19', '19_20', '20_21', '21_22']
+    seasons = [
+        "03_04",
+        "04_05",
+        "05_06",
+        "06_07",
+        "07_08",
+        "08_09",
+        "09_10",
+        "10_11",
+        "11_12",
+        "12_13",
+        "13_14",
+        "14_15",
+        "15_16",
+        "16_17",
+        "17_18",
+        "18_19",
+        "19_20",
+        "20_21",
+        "21_22",
+    ]
+    new_seasons = ["17_18", "18_19", "19_20", "20_21", "21_22"]
     stats = []
     scores = []
     for season in new_seasons:
-        with open(f'new_dataset_add_team_stat/{season}.json', 'r') as f:
+        with open(f"new_dataset/{season}.json", "r") as f:
             stats_loaded = json.load(f)
-        with open(f'new_dataset_add_team_stat/{season}_score.json', 'r') as f:
+        with open(f"new_dataset/{season}_score.json", "r") as f:
             scores_loaded = json.load(f)
         stats.extend(stats_loaded)
         scores.extend(scores_loaded)
@@ -159,25 +201,67 @@ def load_datasets():
     stats = np.array(stats)
     return stats, scores
 
-def run(input_size=306, hidden_size=306, output_size=2, learning_rate=0.002, is_DNN_with_ADAM=True):
+
+def run(
+    input_size=306,
+    hidden_size=306,
+    output_size=2,
+    learning_rate=0.002,
+    is_DNN_with_ADAM=True,
+):
     stats, scores = load_datasets()
 
     stats, min_vals, max_vals = normalize_stats(stats)
-    scores = normalize_scores(scores) # normalize scores to 0 ~ 1, where 0 means 0 and 1 means 4
+    scores = normalize_scores(
+        scores
+    )  # normalize scores to 0 ~ 1, where 0 means 0 and 1 means 4
 
     # split datasets
-    (train_stats, train_scores), (test_stats, test_scores), (eval_stats, eval_scores) = train_test_eval_split(stats, scores, test_ratio=0.1, eval_ratio=0.1)
+    (
+        (train_stats, train_scores),
+        (test_stats, test_scores),
+        (eval_stats, eval_scores),
+    ) = train_test_eval_split(stats, scores, test_ratio=0.1, eval_ratio=0.1)
 
-    ann = ANN(input_size=input_size, hidden_size=hidden_size, output_size=output_size, learning_rate=learning_rate, is_DNN_with_ADAM=is_DNN_with_ADAM)
-    ann.learn(train_stats, train_scores, eval_stats, eval_scores, iters_num=10000, batch_size=200, loss_interval=100, lr_decay=0.99995)
+    ann = ANN(
+        input_size=input_size,
+        hidden_size=hidden_size,
+        output_size=output_size,
+        learning_rate=learning_rate,
+        is_DNN_with_ADAM=is_DNN_with_ADAM,
+    )
+    ann.learn(
+        train_stats,
+        train_scores,
+        eval_stats,
+        eval_scores,
+        iters_num=10000,
+        batch_size=200,
+        loss_interval=100,
+        lr_decay=0.99995,
+    )
 
-    print(ann.predict(test_stats)[:10])
-    print(np.around(test_scores[:10]*4))
+    predict_score = ann.predict(test_stats)[:10]
+    real_score = np.around(test_scores[:10] * 4)
+    for i in range(10):
+        print(
+            i,
+            " predict: [",
+            int(predict_score[i][0]),
+            ":",
+            int(predict_score[i][1]),
+            "]",
+            " real: [",
+            int(real_score[i][0]),
+            ":",
+            int(real_score[i][1]),
+            "]",
+        )
     acc, acc_win = ann.accuracy(test_stats, test_scores)
     print(f"accuracy: {acc}, winning accuracy: {acc_win}")
 
     # show loss and eval loss
-    plt.plot(ann.loss_list, label='loss')
-    plt.plot(ann.eval_loss_list, label='eval loss')
+    plt.plot(ann.loss_list, label="loss")
+    plt.plot(ann.eval_loss_list, label="eval loss")
     plt.legend()
     plt.show()
